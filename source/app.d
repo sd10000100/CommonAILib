@@ -15,10 +15,14 @@ void main()
 
 
     auto InfMap = new InfluenceMap!double(3,5);
+    auto ast = new AStar!double();
+    InfMap.PutPotential(3, 1, a);
+    InfMap.PutAvgPotential(2, 1, Point2D!double(4,0));
+    auto tmp = ast.FindPath(Point2D!double(0,0), Point2D!double(4,2),5,3,InfMap.Map);
 //auto ggg = array_generator(3,5);
 //PutPotential!double(3,1,ggg,10,10,a);
 //PutPotential!double(3, 1, ggg, 10,10, b);
-InfMap.PutPotential(3, 1, a);
+
 //PutPotential!double(3, 1, ggg, a2);
 
 auto ff = InfMap.getSumOfVectorOnInfluenseMap!double(Point2D!double(0,0),Point2D!double(1,0));

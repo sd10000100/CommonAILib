@@ -83,8 +83,6 @@ class InfluenceMap (T){
 
         void PutAvgPotential(T)(double power, double step,  Point2D!T p, double wall=80)
         {
-            ulong sizeY =matr.length;
-            ulong sizeX =matr[0].length;
             double s = 0;
             int x = (abs(floor((p.x).to!double))).to!int;
             int y = (abs(floor((p.y).to!double))).to!int;
@@ -94,18 +92,18 @@ class InfluenceMap (T){
                 {
                     int tempArrMinX = (floor(x-s)).to!int;
                     int tempArrMaxX = (floor(x+s)).to!int;
-                    if(isCorrectCoordinate(tempArrMinX, temp) && matr[tempArrMinX][temp]<wall)
+                    if(isCorrectCoordinate(tempArrMinX, temp) && infMap[temp][tempArrMinX]<wall)
                         infMap[temp][tempArrMinX]=putp(infMap[temp][tempArrMinX],getSign(power)*(abs(power)-l));
-                    if(isCorrectCoordinate(tempArrMaxX, temp) && matr[tempArrMaxX][temp]<wall)
+                    if(isCorrectCoordinate(tempArrMaxX, temp) && infMap[temp][tempArrMaxX]<wall)
                         infMap[temp][tempArrMaxX]=putp(infMap[temp][tempArrMaxX],getSign(power)*(abs(power)-l));
                 }
                 for(int temp = (x-s+1).to!int;temp<=s+x-1;temp++)
                 {
                     int tempArrMinY = (floor(y-s)).to!int;
                     int tempArrMaxY = (floor(y+s)).to!int;
-                    if(isCorrectCoordinate(temp, tempArrMinY) && matr[temp][tempArrMinY]<wall)
+                    if(isCorrectCoordinate(temp, tempArrMinY) && infMap[tempArrMinY][temp]<wall)
                         infMap[tempArrMinY][temp]=putp(infMap[tempArrMinY][temp],getSign(power)*(abs(power)-l));
-                    if(isCorrectCoordinate(temp, tempArrMaxY) && matr[temp][tempArrMaxY]<wall)
+                    if(isCorrectCoordinate(temp, tempArrMaxY) && infMap[tempArrMaxY][temp]<wall)
                         infMap[tempArrMaxY][temp]=putp(infMap[tempArrMaxY][temp],getSign(power)*(abs(power)-l));
                 }
             }
