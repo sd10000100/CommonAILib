@@ -2,11 +2,13 @@ module helper.pathfind.astar;
 import helper;
 import std.math; 
 import std.conv;
+import std.typecons;
 
 // A*
 class PathNode(T)
 {
     alias opCmp = Object.opCmp;
+    alias opEquals = Object.opEquals;
     // Координаты точки на карте.
     Point2D!T Position;
     // Длина пути от старта (G).
@@ -26,7 +28,7 @@ class PathNode(T)
         return PathLengthFromStart + HeuristicEstimatePathLength;
     }
 
-    public int opCmp(PathNode!T v) {
+    int opCmp(PathNode!T v) {
         auto a = EstimateFullPathLengthConst();
         auto va = v.EstimateFullPathLengthConst();
         if(a == va)
@@ -36,6 +38,9 @@ class PathNode(T)
         else return -1;
     }
 
+    bool opEquals(PathNode!T v) {
+        return v.Position == Position;
+    }
 
     // bool operator == (const PathNode &node)
     // {
@@ -124,7 +129,7 @@ class AStar (T) {
             // auto temp = game.level.tiles[point.x][point.y];
             // if ((temp == Tile::WALL))
             //     continue;
-            bool isSomeUnitNear = false;
+            // bool isSomeUnitNear = false;
             // for(auto unit : game.units)
             // {
             //     if(unit.id!=currentUnit.id)
@@ -133,8 +138,8 @@ class AStar (T) {
             //             isSomeUnitNear = true;
             //     }
             // }
-            if(isSomeUnitNear)
-                continue;
+            // if(isSomeUnitNear)
+            //     continue;
             // Заполняем данные для точки маршрута.
             PathNode!T neighbourNode = new PathNode!T();
             neighbourNode.Position.x = point.x;
@@ -153,16 +158,14 @@ class AStar (T) {
         return result;
     }
 
-   PathNode!T find(PathNode!T target, PathNode!T[] entities, ulong elemCount){
-
+   Nullable!(PathNode!T) find(PathNode!T target, PathNode!T[] entities, ulong elemCount){
         for (int i = 0; i < elemCount; i++) {
             if(entities[i].Position.x==target.Position.x && entities[i].Position.y==target.Position.y)
             {
-                return entities[i];
+                return  Nullable!(PathNode!T)(entities[i]);
             }
-            
         }
-        return null;
+        return Nullable!(PathNode!T).init;
     }
 
     Point2D!T[] FindPath(Point2D!T from, Point2D!T to, int _width, int _height, double[][] matrix)
@@ -211,33 +214,44 @@ class AStar (T) {
                 // Шаг 7.
     //            if (GetCountByPosition(neighbourNode.Position, visited, game) > 0)
     //                continue;
-                auto visitedNodeIter = find(neighbourNode, visited, visited.length);
+                Nullable!(PathNode!T) visitedNodeIter = find(neighbourNode, visited, visited.length);
                 //
-                if(visitedNodeIter!=visited[$ - 1])
-                    continue;
-                auto idleNodeIter = find(neighbourNode, Idle, Idle.length);
+                auto lastVisited = visited[$ - 1];
+                // if(visitedNodeIter!=lastVisited ||  visitedNodeIter.isNull())
+                //     continue;
+                Nullable!(PathNode!T) idleNodeIter = find(neighbourNode, Idle, Idle.length);
 
-
+    //   if (openNode == null)
+    //     openSet.Add(neighbourNode);
+    //   else
+    //     if (openNode.PathLengthFromStart > neighbourNode.PathLengthFromStart)
+    //     {
+    //       // Шаг 9.
+    //       openNode.CameFrom = currentNode;
+    //       openNode.PathLengthFromStart = neighbourNode.PathLengthFromStart;
+    //     }
 
                 // Шаг 8.
-                if (idleNodeIter == Idle[$ - 1])
-                    Idle~=neighbourNode;
-                else if (idleNodeIter.PathLengthFromStart > neighbourNode.PathLengthFromStart) {
-                    // Шаг 9.
+                //if (!idleNodeIter.isNull() || Idle.length!=0){
+                    if (idleNodeIter.isNull())
+                        Idle~=neighbourNode;
+                    else if (idleNodeIter.get.PathLengthFromStart > neighbourNode.PathLengthFromStart) {
+                        // Шаг 9.
 
-                    idleNodeIter.CameFrom = neighbourNode;
-                    idleNodeIter.path = [];
-                    //neighbourNode.CameFrom = &pathNode;
-                    foreach(Point2D!T item ; neighbourNode.path)
-                    {
-                        idleNodeIter.path~=Point2D!T(item.x, item.y);
+                        idleNodeIter.get.CameFrom = neighbourNode;
+                        idleNodeIter.get.path = [];
+                        //neighbourNode.CameFrom = &pathNode;
+                        foreach(Point2D!T item ; neighbourNode.path)
+                        {
+                            idleNodeIter.get.path~=Point2D!T(item.x, item.y);
+                        }
+                        idleNodeIter.get.path~=Point2D!T(neighbourNode.Position.x, neighbourNode.Position.y);
+                        //neighbourNode.CameFrom = &pathNode;
+
+                        idleNodeIter.get.PathLengthFromStart = neighbourNode.PathLengthFromStart;
+                        //Idle.push_back(*openNode);
                     }
-                    idleNodeIter.path~=Point2D!T(neighbourNode.Position.x, neighbourNode.Position.y);
-                    //neighbourNode.CameFrom = &pathNode;
-
-                    idleNodeIter.PathLengthFromStart = neighbourNode.PathLengthFromStart;
-                    //Idle.push_back(*openNode);
-                }
+                //}
             }
 
         }

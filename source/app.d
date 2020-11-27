@@ -24,6 +24,11 @@ void main()
 //PutPotential!double(3, 1, ggg, 10,10, b);
 
 //PutPotential!double(3, 1, ggg, a2);
+foreach(ref rw ; tmp)
+    {
+        writeln(rw.x.to!string~" "~rw.y.to!string);
+    }
+
 
 auto ff = InfMap.getSumOfVectorOnInfluenseMap!double(Point2D!double(0,0),Point2D!double(1,0));
 auto dcc = InfMap.GetMinPotentialByRadius!double(2, Point2D!double(0,0));
