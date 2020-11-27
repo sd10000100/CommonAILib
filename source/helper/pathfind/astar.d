@@ -3,7 +3,7 @@ import helper;
 import std.math; 
 import std.conv;
 import std.typecons;
-
+import std.stdio;
 // A*
 class PathNode(T)
 {
@@ -15,17 +15,19 @@ class PathNode(T)
     double PathLengthFromStart=10000;
     // Точка, из которой пришли в эту точку.
     PathNode CameFrom;
+
+    double potential = 0; 
     // Примерное расстояние до цели (H).
     double HeuristicEstimatePathLength;
 
     Point2D!T[] path;
     // Ожидаемое полное расстояние до цели (F).
     double EstimateFullPathLength() {
-        return PathLengthFromStart + HeuristicEstimatePathLength;
+        return PathLengthFromStart + potential;//HeuristicEstimatePathLength;
     }
 
     double EstimateFullPathLengthConst() {
-        return PathLengthFromStart + HeuristicEstimatePathLength;
+        return PathLengthFromStart + potential;//HeuristicEstimatePathLength;
     }
 
     int opCmp(PathNode!T v) {
@@ -144,6 +146,7 @@ class AStar (T) {
             PathNode!T neighbourNode = new PathNode!T();
             neighbourNode.Position.x = point.x;
             neighbourNode.Position.y = point.y;
+            neighbourNode.potential = pathNode.potential + matrix[point.y.to!ulong][point.x.to!ulong];
             neighbourNode.path = pathNode.path;
             //neighbourNode.CameFrom = &pathNode;
     //        for(auto item : pathNode.path)
@@ -152,7 +155,7 @@ class AStar (T) {
     //        }
             neighbourNode.path~=Point2D!T(pathNode.Position.x, pathNode.Position.y);
             neighbourNode.PathLengthFromStart = pathNode.PathLengthFromStart +1,
-                    neighbourNode.HeuristicEstimatePathLength = GetHeuristicPathLength(point, goal);
+                    neighbourNode.HeuristicEstimatePathLength = neighbourNode.potential;// GetHeuristicPathLength(point, goal);
             result~=neighbourNode;
         }
         return result;
@@ -189,7 +192,8 @@ class AStar (T) {
         startNode.path = [];
         startNode.Position = from;
         startNode.PathLengthFromStart = 0,
-        startNode.HeuristicEstimatePathLength = GetHeuristicPathLength(from, to);
+        startNode.potential = matrix[from.y.to!ulong][from.x.to!ulong];
+        startNode.HeuristicEstimatePathLength = startNode.potential;//GetHeuristicPathLength(from, to);
 
         Idle~=startNode;
 
@@ -199,6 +203,7 @@ class AStar (T) {
     //        std::cerr<<"visited size: "<< visited.size()<<'\n';
 
             PathNode!T currentNode = GetMinF(Idle);
+            
             if (floor(currentNode.Position.x) == floor(to.x) && floor(currentNode.Position.y) == floor(to.y)) {
                 return GetPathForNode(currentNode);
             }
@@ -217,8 +222,8 @@ class AStar (T) {
                 Nullable!(PathNode!T) visitedNodeIter = find(neighbourNode, visited, visited.length);
                 //
                 auto lastVisited = visited[$ - 1];
-                // if(visitedNodeIter!=lastVisited ||  visitedNodeIter.isNull())
-                //     continue;
+                if(!visitedNodeIter.isNull()  &&  visitedNodeIter.get!=lastVisited )
+                    continue;
                 Nullable!(PathNode!T) idleNodeIter = find(neighbourNode, Idle, Idle.length);
 
     //   if (openNode == null)
